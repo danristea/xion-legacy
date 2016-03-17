@@ -86,18 +86,20 @@
 
         // loop through cached children and remove entries that do not exist in data
         forEach(cache.children, function(child, index) {
-            var found, position;
+            var found;
             for (var i = 0, l = diffData.length; i < l; i++) {
                 if ((typeof diffData[i] === 'string' && child.node.nodeValue && child.node.nodeValue == diffData[i]) ||
                     Array.isArray(diffData[i]) && child.node.tagName && child.node.tagName.toLowerCase() == diffData[i][0]) {
+                    children[i] = diffData[i] = child;
                     found = true;
-                    position = data.indexOf(diffData[i]);
-                    diffData.splice(i, 1);
-                    break;
+                } else if (found && children[i] && children[i].node) {
+                    if(cache.children.indexOf(children[i]) < cache.children.indexOf(child)) {
+                        child.node.parentNode.insertBefore(child.node, children[i].node)
+                        break;
+                    }
                 };
             };
-            if (found) children[position] = child;
-            else child.node.parentNode.removeChild(child.node);
+            if (!found) child.node.parentNode.removeChild(child.node);
         })
         cache.children = children;
 
